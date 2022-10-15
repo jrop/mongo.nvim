@@ -1,5 +1,7 @@
 # mongo.nvim
 
+[![asciicast](https://asciinema.org/a/MHHlLdHfIGkA6Sswtp4PfW9E0.svg)](https://asciinema.org/a/MHHlLdHfIGkA6Sswtp4PfW9E0)
+
 > Note: I developed/tested this plugin on NeoVim 0.7.2, and 0.8.0. I have not
 > tested it on any other versions
 

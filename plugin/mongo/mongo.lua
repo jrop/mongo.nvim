@@ -91,7 +91,7 @@ ucmd('Mongoquery', function(args)-- {{{
   ]]
   require'mongo.utils'.set_tmp_buf_options()
   local buf = vim.api.nvim_win_get_buf(0)
-  vim.api.nvim_buf_set_lines(buf, 0, 0, false, vim.fn.split(response, '\n'))
+  vim.api.nvim_buf_set_lines(buf, 0, 0, false, vim.fn.split('(' .. response .. ')', '\n'))
   vim.cmd[[
     Prettier
     normal! gg
