@@ -5,28 +5,59 @@
 > Note: I developed/tested this plugin on NeoVim 0.7.2, and 0.8.0. I have not
 > tested it on any other versions
 
-Provides utilities for exploring, querying, and editing Mongo documents.
+MongoDB Compass is a great tool, but when you want to edit a large document, it
+really begins to slow down, and on top of that, a Vimmer really begins to miss
+all the editing capabilities not found in Compass' document editor. Enter this
+plugin: I wanted something that would let me:
+
+1. Write MongoDB queries and execute them from Vim
+2. Edit documents with ease and write them back to the database simply
+
+This plugin does just that by acting as a frontend for the excellent
+[mongosh](https://www.mongodb.com/docs/mongodb-shell/write-scripts/). Send
+mongosh scripts to be executed with `:Mongoquery` and have the results displayed
+in a temporary unlisted buffer. Generate the appropriate "replaceOne(...)"
+script for easy single-document editing with the `:Mongoedit --collection=... --id=...`
+command.
 
 ## Requirements
 
-- `mongosh` executable
-- [prettier/vim-prettier](https://github.com/prettier/vim-prettier) for formatting generated queries
+- The `mongosh` executable should be in your `PATH`
+- [prettier/vim-prettier](https://github.com/prettier/vim-prettier) for
+  formatting generated queries (_Note: I hope to remove this dependency in the
+  future_)
+
+## Installation
+
+**Packer**:
+
+```lua
+use {
+  'jrop/mongo.nvim',
+  requires = { 'prettier/vim-prettier' },
+}
+```
 
 ## Commands
 
-1. `:Mongoconnect [--host=localhost:27017] --db=some_db`
+1. `:Mongoconnect [--host=localhost:27017] --db=some_db` - this is a convenience
+   for "caching" a connection string globally so that you don't have to
+   repeatedly set the DB you want to connect to for each query you run: use this
+   when you need to connect to a specific DB across several repeated calls
 2. `:Mongocollections` - open a buffer that lists the collections in the DB we
    are currently connected to. Press `<Enter>` on a collection to open a
    stub-query.
 3. `:Mongoquery db.some_db.find({})`
 4. `:Mongoquery` - use the current buffer as the Mongo query
 5. `:'<,'>Mongoquery` - use the current selection as the Mongo query
-6. `:Mongoexecute` - like `:Mongoquery` but do not "process" the result set to
-   display it in a buffer: just print the response to Vim's messages
+6. `:Mongoexecute` - like `:Mongoquery` but do not display the result set in a
+   buffer: just print the response to Vim's messages
 7. `:Mongoedit --collection=some_collection --id=SOME_ID` - a shorthand for
    finding a given document, and generating a `db.*.replaceOne(...)` query so
-   that the document can easily be edited
-8. `:Mongoedit --coll=some_collection --id=SOME_ID` - shorthand option
+   that the document can easily be edited (by a subsequent call to
+   `:Mongoexecute`)
+8. `:Mongoedit --coll=some_collection --id=SOME_ID` - shorthand option (`--coll`
+   instead of `--collection`)
 
 ## TODO
 

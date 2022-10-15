@@ -1,6 +1,6 @@
 local M = {}
 
-M._connection_string = nil
+M._connection_string = "localhost:27017"
 
 function M.get_collections()
   if M._connection_string == nil then
