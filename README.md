@@ -1,5 +1,7 @@
 # mongo.nvim
 
+> A NeoVim frontend for mongosh
+
 [![asciicast](https://asciinema.org/a/MHHlLdHfIGkA6Sswtp4PfW9E0.svg)](https://asciinema.org/a/MHHlLdHfIGkA6Sswtp4PfW9E0)
 
 > Note: I developed/tested this plugin on NeoVim 0.7.2, and 0.8.0. I have not
@@ -23,19 +25,13 @@ command.
 ## Requirements
 
 - The `mongosh` executable should be in your `PATH`
-- [prettier/vim-prettier](https://github.com/prettier/vim-prettier) for
-  formatting generated queries (_Note: I hope to remove this dependency in the
-  future_)
 
 ## Installation
 
 **Packer**:
 
 ```lua
-use {
-  'jrop/mongo.nvim',
-  requires = { 'prettier/vim-prettier' },
-}
+use { 'jrop/mongo.nvim' }
 ```
 
 ## Commands
@@ -61,7 +57,7 @@ use {
 
 ## TODO
 
-- [ ] Remove dependency on vim-prettier
+- [X] Remove dependency on vim-prettier
 - [ ] Consider supporting pagination
 
 ## Licence (MIT)

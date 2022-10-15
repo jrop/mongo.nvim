@@ -2,15 +2,28 @@ local kmap = vim.keymap.set
 local ucmd = vim.api.nvim_create_user_command
 local mongo = require'mongo'
 
-function string:startswith(needle)-- {{{
+function string:_startswith(needle)-- {{{
   return self:sub(1, needle:len()) == needle
+end-- }}}
+
+function string:_indent(n)-- {{{
+  local indent = ''
+  for _ = 1,n do
+    indent = indent .. ' '
+  end
+
+  local lines = vim.fn.split(self, '\n')
+  for i, _ in ipairs(lines) do
+    lines[i] = indent .. lines[i]
+  end
+  return vim.fn.join(lines, '\n')
 end-- }}}
 
 function parse_args(args)-- {{{
   local parsed_args = {}
   local idx = 1
   for i, arg in ipairs(args) do
-    if arg:startswith('--') then
+    if arg:_startswith('--') then
       local equals_idx = arg:find('=')
       local key = ''
       local value = nil
@@ -92,10 +105,7 @@ ucmd('Mongoquery', function(args)-- {{{
   require'mongo.utils'.set_tmp_buf_options()
   local buf = vim.api.nvim_win_get_buf(0)
   vim.api.nvim_buf_set_lines(buf, 0, 0, false, vim.fn.split('(' .. response .. ')', '\n'))
-  vim.cmd[[
-    Prettier
-    normal! gg
-  ]]
+  vim.cmd[[normal! gg]]
 end, { range = true, nargs = '*' })-- }}}
 
 -- Shorthand for fetching a document by `--collection=... --id=...` (or
@@ -113,12 +123,9 @@ ucmd('Mongoedit', function(args)-- {{{
   ]]
   require'mongo.utils'.set_tmp_buf_options()
   local buf = vim.api.nvim_win_get_buf(0)
-  local prefix = 'db[' .. vim.fn.json_encode(collection) .. '].replaceOne(\n{ _id: ObjectId(' .. vim.fn.json_encode(id) .. ') }'
-  vim.api.nvim_buf_set_lines(buf, 0, 0, false, vim.fn.split(prefix .. ', \n' .. response .. '\n)', '\n'))
-  vim.cmd[[
-    Prettier
-    normal! gg
-  ]]
+  local prefix = 'db[' .. vim.fn.json_encode(collection) .. '].replaceOne(\n  { _id: ObjectId(' .. vim.fn.json_encode(id) .. ') }'
+  vim.api.nvim_buf_set_lines(buf, 0, 0, false, vim.fn.split(prefix .. ',\n' .. response:_indent(2) .. '\n)', '\n'))
+  vim.cmd[[normal! gg]]
 end, { nargs = '*' })-- }}}
 
 -- Like `:Mongoquery`, but instead of displaying the returned output in a

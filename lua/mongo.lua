@@ -2,6 +2,10 @@ local M = {}
 
 M._connection_string = "localhost:27017"
 
+function string:_trim()
+   return self:match( "^%s*(.-)%s*$" )
+end
+
 function M.get_collections()
   if M._connection_string == nil then
     return {}
@@ -27,7 +31,7 @@ function M.query(q)
     "--eval",
     'printjson(' .. q .. ')',
   }
-  return results
+  return results:_trim()
 end
 
 function M.execute(q)
@@ -38,7 +42,7 @@ function M.execute(q)
     "--eval",
     q,
   }
-  return results
+  return results:_trim()
 end
 
 return M
