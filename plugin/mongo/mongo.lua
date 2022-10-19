@@ -47,7 +47,7 @@ end-- }}}
 ucmd('Mongoconnect', function(args)-- {{{
   local parsed_args = parse_args(args.fargs)
 
-  local db = parsed_args['db'] or parsed_args[1]
+  local db = parsed_args['db'] or parsed_args[1] or mongo.get_dbs()[1]
   local host = parsed_args['host'] or 'localhost:27017'
 
   if db ~= nil then
@@ -65,7 +65,7 @@ ucmd('Mongocollections', function()-- {{{
   vim.cmd[[new]]
   require'mongo.utils'.set_tmp_buf_options()
   local buf = vim.api.nvim_win_get_buf(0)
-  vim.api.nvim_buf_set_lines(buf, 0, 0, false, collections)
+  vim.api.nvim_buf_set_lines(buf, 0, 1, false, collections)
   vim.cmd[[normal! gg]]
 
   -- When <Enter> is pressed on one of the lines in the buffer that lists the
@@ -78,7 +78,7 @@ ucmd('Mongocollections', function()-- {{{
     ]]
     require'mongo.utils'.set_tmp_buf_options()
     local buf = vim.api.nvim_win_get_buf(0)
-    vim.api.nvim_buf_set_lines(buf, 0, 0, false, { 'db[' .. vim.fn.json_encode(collection) .. '].find({})' })
+    vim.api.nvim_buf_set_lines(buf, 0, 1, false, { 'db[' .. vim.fn.json_encode(collection) .. '].find({})' })
     vim.cmd[[normal! gg]]
   end, { buffer = true })
 end, {})-- }}}
@@ -87,9 +87,10 @@ end, {})-- }}}
 -- then use that as the query. If a visual range is given, then the selected
 -- text is used as the query.
 ucmd('Mongoquery', function(args)-- {{{
+  local parsed_args = parse_args(args.fargs);
   local query
-  if #args.args ~= 0 then
-    query = args.args
+  if #parsed_args ~= 0 then
+    query = parsed_args[1]
   elseif args.range == 0 then
     -- no range given:
     query = require'mongo.utils'.buf_text()
@@ -97,14 +98,14 @@ ucmd('Mongoquery', function(args)-- {{{
     -- range was specified:
     query = require'mongo.utils'.buf_vtext()
   end
-  local response = mongo.query(query)
+  local response = mongo.query(query, parsed_args.fmt)
   vim.cmd[[
     new
     set ft=typescript
   ]]
   require'mongo.utils'.set_tmp_buf_options()
   local buf = vim.api.nvim_win_get_buf(0)
-  vim.api.nvim_buf_set_lines(buf, 0, 0, false, vim.fn.split('(' .. response .. ')', '\n'))
+  vim.api.nvim_buf_set_lines(buf, 0, 1, false, vim.fn.split('(' .. response .. ')', '\n'))
   vim.cmd[[normal! gg]]
 end, { range = true, nargs = '*' })-- }}}
 
@@ -116,15 +117,15 @@ ucmd('Mongoedit', function(args)-- {{{
   local parsed_args = parse_args(args.fargs)
   local collection = parsed_args['collection'] or parsed_args['coll']
   local id = parsed_args['id']
-  local response = mongo.query('db[' .. vim.fn.json_encode(collection) .. '].findOne({ _id: ObjectId(' .. vim.fn.json_encode(id) .. ') })')
+  local response = mongo.query('db[' .. vim.fn.json_encode(collection) .. '].findOne({ _id: ' .. vim.fn.json_encode(id) .. ' })', parsed_args.fmt)
   vim.cmd[[
     new
     set ft=typescript
   ]]
   require'mongo.utils'.set_tmp_buf_options()
   local buf = vim.api.nvim_win_get_buf(0)
-  local prefix = 'db[' .. vim.fn.json_encode(collection) .. '].replaceOne(\n  { _id: ObjectId(' .. vim.fn.json_encode(id) .. ') }'
-  vim.api.nvim_buf_set_lines(buf, 0, 0, false, vim.fn.split(prefix .. ',\n' .. response:_indent(2) .. '\n)', '\n'))
+  local prefix = 'db[' .. vim.fn.json_encode(collection) .. '].replaceOne(\n  { _id: ' .. vim.fn.json_encode(id) .. ' }'
+  vim.api.nvim_buf_set_lines(buf, 0, 1, false, vim.fn.split(prefix .. ',\n' .. response:_indent(2) .. '\n)', '\n'))
   vim.cmd[[normal! gg]]
 end, { nargs = '*' })-- }}}
 
