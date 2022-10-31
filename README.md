@@ -54,11 +54,21 @@ use { 'jrop/mongo.nvim' }
    `:Mongoexecute`)
 8. `:Mongoedit --coll=some_collection --id=SOME_ID` - shorthand option (`--coll`
    instead of `--collection`)
+9. `:Mongorefresh` - refresh data in the current buffer
 
 ## TODO
 
 - [X] Remove dependency on vim-prettier
 - [ ] Consider supporting pagination
+
+## Changelog
+
+**October 31st, 2022**
+- Make certain operations "refreshable" and add the `:Mongorefresh` command
+- Fix a bug when the resulting executed expression returns undefined (e.g., IIFE
+  that return void)
+- Make `:Mongoconnect` more robust: if there are multiple DBs, show them in a
+  selector to the user via `vim.ui.select(..)`
 
 ## Licence (MIT)
 

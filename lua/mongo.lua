@@ -17,7 +17,7 @@ function mkquery(q, fmt)
 
     config.set('inspectDepth', Infinity);
     q = $q;
-    if (typeof q.toArray === 'function') q = q.toArray();
+    if (q && typeof q.toArray === 'function') q = q.toArray();
     $fmt
   ]]
   s = s:gsub('$(%w+)', { q = q, fmt = fmt })
@@ -28,14 +28,17 @@ function string:_trim()
   return self:match( "^%s*(.-)%s*$" )
 end
 
-function M.get_dbs()
-  if M._connection_string == nil then
+function M.get_dbs(host)
+  if host == nil then
+    host = M._connection_string
+  end
+  if host == nil then
     return {}
   end
 
   local dbs = vim.fn.system{
     "mongosh",
-    M._connection_string,
+    host,
     "--quiet",
     "--eval",
     [[JSON.stringify(db.adminCommand({ listDatabases: 1 }).databases.map(d => d.name))]]
