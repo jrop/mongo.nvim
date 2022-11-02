@@ -2,6 +2,7 @@ local kmap = vim.keymap.set
 local ucmd = vim.api.nvim_create_user_command
 local mongo = require'mongo'
 local mongo_utils = require'mongo.utils'
+local mongo_query = require'mongo.query'
 
 function string:_startswith(needle)-- {{{
   return self:sub(1, needle:len()) == needle
@@ -121,13 +122,18 @@ ucmd('Mongoquery', function(args)-- {{{
     local response = mongo.query(query, parsed_args.fmt)
     if parsed_args.fmt ~= 'json' then
       response = '('.. response ..')'
+      vim.cmd('set filetype=typescript')
+    else
+      vim.cmd('set filetype=json')
     end
     mongo_utils.set_buf_text(vim.fn.split(response, '\n'))
     vim.cmd[[normal! gg]]
   end
-  mongo_utils.make_split({ refresh = refresh })
+  mongo_utils.make_split({
+    refresh = refresh,
+    collection = mongo_query.get_collection_name(query),
+  })
   local buf = vim.api.nvim_win_get_buf(0)
-  vim.cmd[[set ft=typescript]]
   mongo_utils.set_tmp_buf_options()
   refresh()
 end, { range = true, nargs = '*' })-- }}}
@@ -138,9 +144,18 @@ end, { range = true, nargs = '*' })-- }}}
 -- `:Mongoexecute` for easy document-editing
 ucmd('Mongoedit', function(args)-- {{{
   local parsed_args = parse_args(args.fargs)
-  local collection = parsed_args['collection'] or parsed_args['coll']
-  local id = parsed_args['id']
+  local collection = parsed_args['collection'] or parsed_args['coll'] or mongo_utils.buf_data()['collection']
+  local id = parsed_args['id'] or mongo_query.find_nearest_id()
+  if collection == nil then
+    print('Mongoedit: collection required')
+    return
+  end
+  if id == nil then
+    print('Mongoedit: id required')
+    return
+  end
 
+  print('Editing '.. collection ..':'.. id)
   local function refresh()
     local response = mongo.query('db[' .. vim.fn.json_encode(collection) .. '].findOne({ _id: ' .. vim.fn.json_encode(id) .. ' })', parsed_args.fmt)
     local prefix = 'db[' .. vim.fn.json_encode(collection) .. '].replaceOne(\n  { _id: ' .. vim.fn.json_encode(id) .. ' }'

@@ -52,9 +52,17 @@ use { 'jrop/mongo.nvim' }
    finding a given document, and generating a `db.*.replaceOne(...)` query so
    that the document can easily be edited (by a subsequent call to
    `:Mongoexecute`)
-8. `:Mongoedit --coll=some_collection --id=SOME_ID` - shorthand option (`--coll`
-   instead of `--collection`)
-9. `:Mongorefresh` - refresh data in the current buffer
+8. `:Mongoedit --coll=some_collection --id=SOME_ID [--fmt=json]` - shorthand option (`--coll`
+   instead of `--collection [--fmt=json]`)
+9. `:Mongoedit [--fmt=json]` - with no parameters, the plugin will try to infer
+   the collection and relevant id by doing a few things:
+   - if the query that produced the current buffer/split is simple enough, the
+     plugin will have extracted the collection and stores that as tag-data on
+     the current buffer. In order to take advantage of this, the current buffer
+     has to have been produced by running `:Mongoquery`
+   - the nearest `_id` is extracted based on the current cursor position using
+     the current Treesitter context for the current buffer
+10. `:Mongorefresh` - refresh data in the current buffer
 
 ## TODO
 
@@ -62,6 +70,13 @@ use { 'jrop/mongo.nvim' }
 - [ ] Consider supporting pagination
 
 ## Changelog
+
+**November 2, 2022**
+- Utilize Treesitter when executing a query to keep track of what collection a
+  data-results split originated from
+- When `:Mongoedit` is run without `--coll`/`--id`, try to infer the collection
+  from the data stored in the previous bullet, and also try to infer the nearest
+  `_id` (based on cursor position) using the current Treesitter context.
 
 **October 31st, 2022**
 - Make certain operations "refreshable" and add the `:Mongorefresh` command
