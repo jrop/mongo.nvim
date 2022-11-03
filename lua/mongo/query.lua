@@ -57,28 +57,14 @@ function M.find_nearest_id(bufid)
   local parser = ts.get_parser(bufid)
   local tree = parser:parse()[1]
 
-  local ft = vim.fn.getbufvar(bufid, '&filetype')
-
-  local query = nil
-  if ft == 'typescript' then
-    query = ts.query.parse_query('typescript', [[
-      (object
-       (pair
-         key: ((property_identifier) @id (#eq? @id "_id"))
-         value: (string (string_fragment) @id_value)
-       )
-      ) @obj
-    ]])
-  else
-    query = ts.query.parse_query('json', [[
-      (object
-       (pair
-         key: (string (string_content) @id (#eq? @id "_id"))
-         value: (string (string_content) @id_value)
-       )
-      ) @obj
-    ]])
-  end
+  local query = ts.query.parse_query('json', [[
+    (object
+     (pair
+       key: (string (string_content) @id (#eq? @id "_id"))
+       value: (_) @id_value
+     )
+    ) @obj
+  ]])
 
   local pos = vim.fn.getpos('.')
   local line = pos[2] - 1
@@ -87,7 +73,10 @@ function M.find_nearest_id(bufid)
   for _, captures in query:iter_matches(tree:root(), bufid) do
     local tab = caps_to_table(query, captures)
     if ts.is_in_node_range(tab["obj"], line, col) then
-      return ts.query.get_node_text(tab["id_value"], bufid)
+      local node_text = ts.query.get_node_text(tab["id_value"], bufid)
+      -- node_text could be a JSON object, so let's remove newlines:
+      node_text = vim.fn.json_encode(vim.fn.json_decode(node_text))
+      return node_text
     end
   end
 end

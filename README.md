@@ -52,9 +52,9 @@ use { 'jrop/mongo.nvim' }
    finding a given document, and generating a `db.*.replaceOne(...)` query so
    that the document can easily be edited (by a subsequent call to
    `:Mongoexecute`)
-8. `:Mongoedit --coll=some_collection --id=SOME_ID [--fmt=json]` - shorthand option (`--coll`
-   instead of `--collection [--fmt=json]`)
-9. `:Mongoedit [--fmt=json]` - with no parameters, the plugin will try to infer
+8. `:Mongoedit --coll=some_collection --id=SOME_ID` - shorthand option (`--coll`
+   instead of `--collection`)
+9. `:Mongoedit` - with no parameters, the plugin will try to infer
    the collection and relevant id by doing a few things:
    - if the query that produced the current buffer/split is simple enough, the
      plugin will have extracted the collection and stores that as tag-data on
@@ -68,8 +68,14 @@ use { 'jrop/mongo.nvim' }
 
 - [X] Remove dependency on vim-prettier
 - [ ] Consider supporting pagination
+- [ ] Consider writing a custom data format (built on top of EJSON) that
+      displays things in a more JS-like way
 
 ## Changelog
+
+**November 4, 2022**
+- Remove JS-style output of queries as it was too error-prone. Use EJSON
+  everywhere.
 
 **November 2, 2022**
 - Utilize Treesitter when executing a query to keep track of what collection a

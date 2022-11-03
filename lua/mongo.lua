@@ -2,13 +2,7 @@ local M = {}
 
 M._connection_string = "localhost:27017"
 
-function mkquery(q, fmt)
-  if fmt == nil then
-    fmt = 'print(q)'
-  elseif fmt == 'ejson' or fmt == 'json' then
-    fmt = 'EJSON.stringify(q, null, 2)'
-  end
-
+function mkquery(q)
   local s = [[
     // https://github.com/nodejs/node/issues/6456
     try {
@@ -18,9 +12,9 @@ function mkquery(q, fmt)
     config.set('inspectDepth', Infinity);
     q = $q;
     if (q && typeof q.toArray === 'function') q = q.toArray();
-    $fmt
+    EJSON.stringify(q, null, 2)
   ]]
-  s = s:gsub('$(%w+)', { q = q, fmt = fmt })
+  s = s:gsub('$(%w+)', { q = q })
   return s
 end
 
@@ -73,8 +67,8 @@ function M.get_collections()
   return collections
 end
 
-function M.query(q, fmt)
-  q = mkquery(q, fmt)
+function M.query(q)
+  q = mkquery(q)
   local results = vim.fn.system{
     "mongosh",
     M._connection_string,

@@ -119,13 +119,8 @@ ucmd('Mongoquery', function(args)-- {{{
   end
 
   local function refresh()
-    local response = mongo.query(query, parsed_args.fmt)
-    if parsed_args.fmt ~= 'json' then
-      response = '('.. response ..')'
-      vim.cmd('set filetype=typescript')
-    else
-      vim.cmd('set filetype=json')
-    end
+    local response = mongo.query(query)
+    vim.cmd('set filetype=json')
     mongo_utils.set_buf_text(vim.fn.split(response, '\n'))
     vim.cmd[[normal! gg]]
   end
@@ -145,7 +140,12 @@ end, { range = true, nargs = '*' })-- }}}
 ucmd('Mongoedit', function(args)-- {{{
   local parsed_args = parse_args(args.fargs)
   local collection = parsed_args['collection'] or parsed_args['coll'] or mongo_utils.buf_data()['collection']
-  local id = parsed_args['id'] or mongo_query.find_nearest_id()
+  local id
+  if parsed_args['id'] ~= nil then
+    id = vim.fn.json_encode(parsed_args['id'])
+  else
+    id = mongo_query.find_nearest_id()
+  end
   if collection == nil then
     print('Mongoedit: collection required')
     return
@@ -157,9 +157,9 @@ ucmd('Mongoedit', function(args)-- {{{
 
   print('Editing '.. collection ..':'.. id)
   local function refresh()
-    local response = mongo.query('db[' .. vim.fn.json_encode(collection) .. '].findOne({ _id: ' .. vim.fn.json_encode(id) .. ' })', parsed_args.fmt)
-    local prefix = 'db[' .. vim.fn.json_encode(collection) .. '].replaceOne(\n  { _id: ' .. vim.fn.json_encode(id) .. ' }'
-    mongo_utils.set_buf_text(vim.fn.split(prefix .. ',\n' .. response:_indent(2) .. '\n)', '\n'))
+    local response = mongo.query('db[' .. vim.fn.json_encode(collection) .. '].findOne({ _id: EJSON.deserialize(' .. id .. ') })')
+    local prefix = 'db[' .. vim.fn.json_encode(collection) .. '].replaceOne(\n  { _id: EJSON.deserialize(' .. id .. ') }'
+    mongo_utils.set_buf_text(vim.fn.split(prefix .. ',\n' .. ('EJSON.deserialize(' .. response .. ')'):_indent(2) .. '\n)', '\n'))
     vim.cmd[[normal! gg]]
   end
   mongo_utils.make_split({ refresh = refresh })
