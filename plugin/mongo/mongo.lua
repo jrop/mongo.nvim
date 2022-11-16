@@ -102,6 +102,14 @@ ucmd('Mongocollections', function()-- {{{
   end, { buffer = true })
 end, {})-- }}}
 
+-- Opens a new split with a stub-query in it
+ucmd('Mongonewquery', function(args)-- {{{
+  mongo_utils.make_split({})
+  mongo_utils.set_tmp_buf_options()
+  mongo_utils.set_buf_text({ 'db[""].find({})' })
+  vim.cmd[[set filetype=typescript]]
+end, {})-- }}}
+
 -- Execute a query against the current DB. If args are given to the command,
 -- then use that as the query. If a visual range is given, then the selected
 -- text is used as the query.
