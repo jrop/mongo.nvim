@@ -104,10 +104,20 @@ end, {})-- }}}
 
 -- Opens a new split with a stub-query in it
 ucmd('Mongonewquery', function(args)-- {{{
-  mongo_utils.make_split({})
-  mongo_utils.set_tmp_buf_options()
-  mongo_utils.set_buf_text({ 'db[""].find({})' })
-  vim.cmd[[set filetype=typescript]]
+  vim.ui.select(
+    mongo.get_collections(),
+    { prompt = 'Select a collection' },
+    function(collection)
+      if collection == nil then
+        return
+      end
+
+      mongo_utils.make_split({})
+      mongo_utils.set_tmp_buf_options()
+      mongo_utils.set_buf_text({ 'db["' .. collection .. '"].find({})' })
+      vim.cmd[[set filetype=typescript]]
+    end
+  )
 end, {})-- }}}
 
 -- Execute a query against the current DB. If args are given to the command,
