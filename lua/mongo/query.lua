@@ -14,7 +14,7 @@ end
 function M.get_collection_name(src)
   local parser = ts.get_string_parser(src, "typescript")
   local tree = parser:parse()[1]
-  local query = ts.query.parse_query('typescript', [[
+  local query = ts.query.parse('typescript', [[
   (call_expression
     function: (member_expression
       object: ((_) @mbr (#match? @mbr "^db(\\[|\\.)"))
@@ -57,7 +57,7 @@ function M.find_nearest_id(bufid)
   local parser = ts.get_parser(bufid)
   local tree = parser:parse()[1]
 
-  local query = ts.query.parse_query('json', [[
+  local query = ts.query.parse('json', [[
     (object
      (pair
        key: (string (string_content) @id (#eq? @id "_id"))
