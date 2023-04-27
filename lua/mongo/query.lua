@@ -34,7 +34,7 @@ function M.get_collection_name(src)
       return nil
     end
 
-    local txt = ts.query.get_node_text(tab["mbr"], src)
+    local txt = ts.get_node_text(tab["mbr"], src)
 
     if string.sub(txt, 1, 3) == "db[" then
       txt = string.sub(txt, 5) -- trim leading 'db[' (and quote)
@@ -73,7 +73,7 @@ function M.find_nearest_id(bufid)
   for _, captures in query:iter_matches(tree:root(), bufid) do
     local tab = caps_to_table(query, captures)
     if ts.is_in_node_range(tab["obj"], line, col) then
-      local node_text = ts.query.get_node_text(tab["id_value"], bufid)
+      local node_text = ts.get_node_text(tab["id_value"], bufid)
       -- node_text could be a JSON object, so let's remove newlines:
       node_text = vim.fn.json_encode(vim.fn.json_decode(node_text))
       return node_text
