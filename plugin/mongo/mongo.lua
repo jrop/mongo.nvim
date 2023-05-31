@@ -1,8 +1,17 @@
 local kmap = vim.keymap.set
-local ucmd = vim.api.nvim_create_user_command
 local mongo = require'mongo'
 local mongo_utils = require'mongo.utils'
 local mongo_query = require'mongo.query'
+
+function ucmd(names, ...)
+  if type(names) == 'string' then
+    names = { names }
+  end
+
+  for _, name in ipairs(names) do
+    vim.api.nvim_create_user_command(name, ...)
+  end
+end
 
 function string:_startswith(needle)-- {{{
   return self:sub(1, needle:len()) == needle
@@ -46,14 +55,14 @@ end-- }}}
 
 -- "Connect" to a given Mongo instance (i.e., cache the connection info in a
 -- global variable)
-ucmd('Mongoconnect', function(args)-- {{{
+ucmd({ 'Mongoconnect', 'Mconnect' }, function(args)-- {{{
   local parsed_args = parse_args(args.fargs)
 
 
   local db = parsed_args['db'] or parsed_args[1]
   local host = parsed_args['host'] or 'localhost:27017'
 
-  local function next(db) 
+  local function next(db)
     if db ~= nil then
       mongo._connection_string = host .. '/' .. db
     else
@@ -80,7 +89,7 @@ end, { nargs = '*' })-- }}}
 -- Create a temp buffer that shows a list of Mongo collections in the DB we are
 -- currently connected to, and setup a buffer-local keybind (<Enter>) that will
 -- take the current line and create a sample query in a new temp-buffer
-ucmd('Mongocollections', function()-- {{{
+ucmd({ 'Mongocollections', 'Mcollections' }, function()-- {{{
   local function refresh()
     local collections = mongo.get_collections()
     mongo_utils.set_buf_text(vim.fn.join(collections, '\n'))
@@ -103,7 +112,7 @@ ucmd('Mongocollections', function()-- {{{
 end, {})-- }}}
 
 -- Opens a new split with a stub-query in it
-ucmd('Mongonewquery', function(args)-- {{{
+ucmd({ 'Mongonewquery', 'Mnewquery' }, function(args)-- {{{
   vim.ui.select(
     mongo.get_collections(),
     { prompt = 'Select a collection' },
@@ -123,7 +132,7 @@ end, {})-- }}}
 -- Execute a query against the current DB. If args are given to the command,
 -- then use that as the query. If a visual range is given, then the selected
 -- text is used as the query.
-ucmd('Mongoquery', function(args)-- {{{
+ucmd({ 'Mongoquery', 'Mquery' }, function(args)-- {{{
   local parsed_args = parse_args(args.fargs);
   local query
   if #parsed_args ~= 0 then
@@ -155,7 +164,7 @@ end, { range = true, nargs = '*' })-- }}}
 -- shorthand `--coll=... --id=...`) and code-generating a
 -- `db.*.replaceOne(...)` query that can be used in conjunction with
 -- `:Mongoexecute` for easy document-editing
-ucmd('Mongoedit', function(args)-- {{{
+ucmd({ 'Mongoedit', 'Medit' }, function(args)-- {{{
   local parsed_args = parse_args(args.fargs)
   local collection = parsed_args['collection'] or parsed_args['coll'] or mongo_utils.buf_data()['collection']
   local id
@@ -189,7 +198,7 @@ end, { nargs = '*' })-- }}}
 
 -- Like `:Mongoquery`, but instead of displaying the returned output in a
 -- temp-buffer, just print the result to Vim's messages
-ucmd('Mongoexecute', function(args)-- {{{
+ucmd({ 'Mongoexecute', 'Mexecute' }, function(args)-- {{{
   local query
   if #args.args ~= 0 then
     query = args.args
@@ -205,7 +214,7 @@ ucmd('Mongoexecute', function(args)-- {{{
 end, { range = true })-- }}}
 
 -- Refreshes the data in the current buffer
-ucmd('Mongorefresh', function()-- {{{
+ucmd({ 'Mongorefresh', 'Mrefresh' }, function()-- {{{
   local data = mongo_utils.buf_data()
   if
     data == nil
