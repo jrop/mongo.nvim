@@ -1,6 +1,6 @@
 M = {}
 
-M._buf_data = {}
+local _buf_data = {}
 
 function M.buf_text()
   local bufnr = vim.api.nvim_win_get_buf(0)
@@ -63,7 +63,7 @@ function M.make_split(data)
   end
 
   local bufnr = vim.fn.bufnr('%')
-  M._buf_data[bufnr] = data
+  _buf_data[bufnr] = data
 
   vim.api.nvim_create_autocmd(
     { "BufUnload" },
@@ -74,7 +74,7 @@ function M.make_split(data)
         if deleting ~= bufnr then
           return
         end
-        M._buf_data[bufnr] = nil
+        _buf_data[bufnr] = nil
       end
     }
   )
@@ -84,7 +84,7 @@ function M.buf_data(bufnr)
   if bufnr == nil then
     bufnr = vim.fn.bufnr('%')
   end
-  return M._buf_data[bufnr]
+  return _buf_data[bufnr]
 end
 
 return M
